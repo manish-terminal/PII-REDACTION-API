@@ -28,7 +28,7 @@ func (h *DetectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	detections, err := h.pipeline.Detect(r.Context(), req)
 	if err != nil {
-		http.Error(w, "Detection failed", http.StatusInternalServerError)
+		http.Error(w, "Detection failed: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

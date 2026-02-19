@@ -64,10 +64,10 @@ func main() {
 
 	r.Get("/v1/health", handler.Health)
 
+	r.Post("/v1/detect", handler.NewDetectHandler(pipeline).ServeHTTP)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.Auth(cfg.APIKey))
 		r.Post("/v1/redact", handler.NewRedactHandler(pipeline, redactorSvc).ServeHTTP)
-		r.Post("/v1/detect", handler.NewDetectHandler(pipeline).ServeHTTP)
 		r.Post("/v1/detokenize", handler.NewDetokenizeHandler(redactorSvc).ServeHTTP)
 	})
 

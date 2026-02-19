@@ -13,8 +13,9 @@ import (
 	"github.com/asoasis/pii-redaction-api/internal/redactor"
 	"github.com/asoasis/pii-redaction-api/internal/store"
 	"github.com/aws/aws-lambda-go/lambda"
-	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
+	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 	"github.com/go-chi/chi/v5"
+
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/rs/zerolog"
@@ -73,9 +74,10 @@ func main() {
 	// Check if running in Lambda
 	if os.Getenv("LAMBDA_TASK_ROOT") != "" || os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
 		log.Info().Msg("Running in Lambda environment")
-		chiLambda := chiadapter.New(r)
-		lambda.Start(chiLambda.ProxyWithContext)
+		adapter := httpadapter.NewV2(r)
+		lambda.Start(adapter.ProxyWithContext)
 	} else {
+
 		log.Info().Str("port", cfg.Port).Msg("Starting PII Redaction API locally")
 		if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {
 			log.Fatal().Err(err).Msg("Server failed")

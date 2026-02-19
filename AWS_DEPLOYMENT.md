@@ -70,13 +70,33 @@ The application uses the `aws-sdk-go-v2` library. When running inside AWS (Lambd
 
 You **do not** need to hardcode any keys in the code. The `config.LoadDefaultConfig(ctx)` call in `internal/store/dynamodb.go` handles this automatically using the "Default Credentials Provider Chain".
 
-## 5. Deploying to Lambda
+## 5. Initial Lambda Creation
 
-1. **Build for Linux**:
-   ```bash
-   GOOS=linux GOARCH=amd64 go build -o main cmd/server/main.go
-   zip function.zip main
-   ```
-2. Upload `function.zip` to AWS Lambda.
-3. Set the **Handler** to `main`.
-4. (Optional) Set up **API Gateway** as a trigger to expose the Lambda via a public URL.
+The GitHub Action uses `update-function-code`, which requires the function to **already exist**. You only need to do this once.
+
+### Option A: Via AWS Console
+1. Go to **Lambda** > **Functions** > **Create function**.
+2. **Function name**: `pii-redaction-api`.
+3. **Runtime**: Select **Amazon Linux 2023**.
+4. **Architecture**: `x86_64`.
+5. Under **Permissions**, ensure the execution role has DynamoDB access (see Section 2).
+6. Click **Create function**.
+
+### Option B: Via AWS CLI
+```bash
+# 1. Build the initial binary
+GOOS=linux GOARCH=amd64 go build -o main cmd/server/main.go
+zip function.zip main
+
+# 2. Create the function (replace <YOUR_ROLE_ARN>)
+aws lambda create-function \
+    --function-name pii-redaction-api \
+    --runtime provided.al2023 \
+    --handler main \
+    --architecture x86_64 \
+    --role <YOUR_ROLE_ARN> \
+    --zip-file fileb://function.zip
+```
+
+## 6. GitHub Actions CI/CD
+

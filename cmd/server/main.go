@@ -58,8 +58,9 @@ func main() {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("PII Redaction API is running"))
+		w.Write([]byte("PII Redaction API is running. Received: " + r.Method + " " + r.URL.Path))
 	})
+
 	r.Get("/v1/health", handler.Health)
 
 	r.Group(func(r chi.Router) {

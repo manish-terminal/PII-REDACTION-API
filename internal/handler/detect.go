@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -19,7 +20,13 @@ func NewDetectHandler(pipeline *detector.Pipeline) *DetectHandler {
 }
 
 func (h *DetectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			http.Error(w, fmt.Sprintf("Panic recovered: %v", r), http.StatusInternalServerError)
+		}
+	}()
 	start := time.Now()
+
 	var req model.DetectionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

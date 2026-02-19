@@ -19,8 +19,8 @@ jobs:
 
       - name: Build
         run: |
-          GOOS=linux GOARCH=amd64 go build -o main cmd/server/main.go
-          zip function.zip main
+          GOOS=linux GOARCH=amd64 go build -o bootstrap cmd/server/main.go
+          zip function.zip bootstrap
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -34,3 +34,4 @@ jobs:
           aws lambda update-function-code \
             --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
             --zip-file fileb://function.zip
+

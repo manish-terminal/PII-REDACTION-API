@@ -84,22 +84,24 @@ The GitHub Action uses `update-function-code`, which requires the function to **
 4. **Architecture**: `x86_64`.
 5. Under **Permissions**, ensure the execution role has DynamoDB access (see Section 2).
 6. Click **Create function**.
+7. **IMPORTANT**: In the **Runtime settings** (at the bottom of the Code tab), ensure the **Handler** is set to `bootstrap`.
 
 ### Option B: Via AWS CLI
 ```bash
 # 1. Build the initial binary
-GOOS=linux GOARCH=amd64 go build -o main cmd/server/main.go
-zip function.zip main
+GOOS=linux GOARCH=amd64 go build -o bootstrap cmd/server/main.go
+zip function.zip bootstrap
 
 # 2. Create the function (replace <YOUR_ROLE_ARN>)
 aws lambda create-function \
     --function-name pii-redaction-api \
     --runtime provided.al2023 \
-    --handler main \
+    --handler bootstrap \
     --architecture x86_64 \
     --role <YOUR_ROLE_ARN> \
     --zip-file fileb://function.zip
 ```
+
 
 ## 6. GitHub Actions CI/CD
 

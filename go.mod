@@ -1,6 +1,6 @@
 module github.com/asoasis/pii-redaction-api
 
-go 1.25.7
+go 1.23
 
 require (
 	github.com/aws/aws-lambda-go v1.52.0

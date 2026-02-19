@@ -87,6 +87,7 @@ The GitHub Action uses `update-function-code`, which requires the function to **
 7. **IMPORTANT**: In the **Runtime settings** (at the bottom of the Code tab), ensure the **Handler** is set to `bootstrap`.
 8. **Memory Allocation**: Increase the memory to at least **512MB** (1GB recommended) if you want to use the NER layer.
 9. **Environment Variable**: To use the NER layer, add `ENABLE_NER=true`. By default, it is `false` to prevent crashes on low-memory (128MB) Lambda instances.
+// TODO: NER is crashing
 
 
 ### Option B: Via AWS CLI

@@ -56,6 +56,10 @@ func main() {
 		w.Write([]byte("Route not found: " + r.URL.Path))
 	})
 
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("PII Redaction API is running"))
+	})
 	r.Get("/v1/health", handler.Health)
 
 	r.Group(func(r chi.Router) {

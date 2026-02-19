@@ -51,6 +51,11 @@ func main() {
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 	}))
 
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Route not found: " + r.URL.Path))
+	})
+
 	r.Get("/v1/health", handler.Health)
 
 	r.Group(func(r chi.Router) {

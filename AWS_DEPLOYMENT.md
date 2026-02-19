@@ -42,8 +42,10 @@ The IAM Role used by your application (e.g., Lambda Execution Role or EC2 Instan
             "Action": [
                 "dynamodb:PutItem",
                 "dynamodb:GetItem",
-                "dynamodb:UpdateItem"
+                "dynamodb:UpdateItem",
+                "lambda:UpdateFunctionCode"
             ],
+
             "Resource": "arn:aws:dynamodb:*:*:table/pii-tokens"
         }
     ]

@@ -68,9 +68,10 @@ Instead of a `.env` file, you should "save" these in the AWS service configurati
 
 The application uses the `aws-sdk-go-v2` library. When running inside AWS (Lambda, EC2, ECS), the SDK automatically searches for credentials in the following order:
 1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`).
-2. IAM Role for the resource (Recommended).
+70. **IAM Role for the resource** (Recommended).
+71. 
+72. The application is **Lambda-aware**. When it detects it is running in AWS Lambda (via environment variables), it automatically switches from a standard HTTP server to a Lambda Proxy using `aws-lambda-go`. This allows it to work seamlessly with **Lambda Function URLs** and **API Gateway**.
 
-You **do not** need to hardcode any keys in the code. The `config.LoadDefaultConfig(ctx)` call in `internal/store/dynamodb.go` handles this automatically using the "Default Credentials Provider Chain".
 
 ## 5. Initial Lambda Creation
 

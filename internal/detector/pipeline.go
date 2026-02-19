@@ -2,6 +2,7 @@ package detector
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"sync"
 
@@ -34,11 +35,21 @@ func (p *Pipeline) Detect(ctx context.Context, req model.DetectionRequest) ([]mo
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
+		defer func() {
+			if r := recover(); r != nil {
+				regexErr = fmt.Errorf("regex detector panicked: %v", r)
+			}
+		}()
 		regexResults, regexErr = p.regex.Detect(ctx, req.Text, req.Locale)
 	}()
 
 	go func() {
 		defer wg.Done()
+		defer func() {
+			if r := recover(); r != nil {
+				nerErr = fmt.Errorf("ner detector panicked: %v", r)
+			}
+		}()
 		nerResults, nerErr = p.ner.Detect(ctx, req.Text)
 	}()
 

@@ -1,0 +1,82 @@
+# AWS Deployment & Configuration Guide
+
+This guide explains how to set up the necessary AWS infrastructure and configure your Go application to connect to it.
+
+## 1. DynamoDB Setup
+
+The application uses DynamoDB to store tokens for reversible redaction.
+
+### Manual Setup (AWS Console)
+1. Go to **DynamoDB** > **Tables** > **Create table**.
+2. **Table name**: `pii-tokens` (or whatever you set in `DYNAMO_TABLE_NAME`).
+3. **Partition key**: `token` (String).
+4. Leave other settings as default and click **Create table**.
+5. Once created, go to the **Additional settings** tab.
+6. Under **Time to Live (TTL)**, click **Turn on**.
+7. **TTL attribute**: `expires_at`.
+8. Click **Turn on TTL**.
+
+### AWS CLI Setup
+```bash
+aws dynamodb create-table \
+    --table-name pii-tokens \
+    --attribute-definitions AttributeName=token,AttributeType=S \
+    --key-schema AttributeName=token,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST
+
+aws dynamodb update-time-to-live \
+    --table-name pii-tokens \
+    --time-to-live-specification "Enabled=true, AttributeName=expires_at"
+```
+
+## 2. IAM Permissions
+
+The IAM Role used by your application (e.g., Lambda Execution Role or EC2 Instance Profile) needs the following permissions for the DynamoDB table:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "arn:aws:dynamodb:*:*:table/pii-tokens"
+        }
+    ]
+}
+```
+
+## 3. Environment Variables (Lambda/EC2)
+
+Instead of a `.env` file, you should "save" these in the AWS service configuration.
+
+### In AWS Lambda:
+1. Go to your Lambda function > **Configuration** > **Environment variables**.
+2. Click **Edit** and add the following:
+   - `DYNAMO_TABLE_NAME`: `pii-tokens`
+   - `AWS_REGION`: `us-east-1` (match your table's region)
+   - `API_KEY`: Your secret key (e.g., `sk_prod_...`)
+   - `LOG_LEVEL`: `info`
+
+## 4. How the App Connects
+
+The application uses the `aws-sdk-go-v2` library. When running inside AWS (Lambda, EC2, ECS), the SDK automatically searches for credentials in the following order:
+1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`).
+2. IAM Role for the resource (Recommended).
+
+You **do not** need to hardcode any keys in the code. The `config.LoadDefaultConfig(ctx)` call in `internal/store/dynamodb.go` handles this automatically using the "Default Credentials Provider Chain".
+
+## 5. Deploying to Lambda
+
+1. **Build for Linux**:
+   ```bash
+   GOOS=linux GOARCH=amd64 go build -o main cmd/server/main.go
+   zip function.zip main
+   ```
+2. Upload `function.zip` to AWS Lambda.
+3. Set the **Handler** to `main`.
+4. (Optional) Set up **API Gateway** as a trigger to expose the Lambda via a public URL.

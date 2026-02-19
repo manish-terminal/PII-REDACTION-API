@@ -10,6 +10,7 @@ type Config struct {
 	AWSRegion       string `envconfig:"AWS_REGION" default:"us-east-1"`
 	DynamoTableName string `envconfig:"DYNAMO_TABLE_NAME" default:"pii-tokens"`
 	APIKey          string `envconfig:"API_KEY" default:"sk_test_123"`
+	EnableNER       bool   `envconfig:"ENABLE_NER" default:"false"`
 }
 
 func Load() (Config, error) {

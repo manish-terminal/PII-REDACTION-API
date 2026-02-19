@@ -37,7 +37,7 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to initialize DynamoDB store")
 	}
 
-	pipeline := detector.NewPipeline("en-US")
+	pipeline := detector.NewPipeline("en-US", cfg.EnableNER)
 	redactorSvc := redactor.NewRedactor(dynamoStore)
 
 	r := chi.NewRouter()

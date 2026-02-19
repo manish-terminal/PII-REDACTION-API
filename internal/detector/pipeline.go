@@ -10,17 +10,22 @@ import (
 )
 
 type Pipeline struct {
-	regex   *RegexDetector
-	ner     *NERDetector
-	context *ContextAnalyzer
+	regex     *RegexDetector
+	ner       *NERDetector
+	context   *ContextAnalyzer
+	enableNER bool
 }
 
-func NewPipeline(defaultLocale string) *Pipeline {
-	return &Pipeline{
-		regex:   NewRegexDetector(defaultLocale),
-		ner:     NewNERDetector(),
-		context: NewContextAnalyzer(),
+func NewPipeline(defaultLocale string, enableNER bool) *Pipeline {
+	p := &Pipeline{
+		regex:     NewRegexDetector(defaultLocale),
+		context:   NewContextAnalyzer(),
+		enableNER: enableNER,
 	}
+	if enableNER {
+		p.ner = NewNERDetector()
+	}
+	return p
 }
 
 func (p *Pipeline) Detect(ctx context.Context, req model.DetectionRequest) ([]model.Detection, error) {
@@ -32,7 +37,7 @@ func (p *Pipeline) Detect(ctx context.Context, req model.DetectionRequest) ([]mo
 		wg           sync.WaitGroup
 	)
 
-	wg.Add(2)
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		defer func() {
@@ -43,15 +48,18 @@ func (p *Pipeline) Detect(ctx context.Context, req model.DetectionRequest) ([]mo
 		regexResults, regexErr = p.regex.Detect(ctx, req.Text, req.Locale)
 	}()
 
-	go func() {
-		defer wg.Done()
-		defer func() {
-			if r := recover(); r != nil {
-				nerErr = fmt.Errorf("ner detector panicked: %v", r)
-			}
+	if p.enableNER && p.ner != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					nerErr = fmt.Errorf("ner detector panicked: %v", r)
+				}
+			}()
+			nerResults, nerErr = p.ner.Detect(ctx, req.Text)
 		}()
-		nerResults, nerErr = p.ner.Detect(ctx, req.Text)
-	}()
+	}
 
 	wg.Wait()
 

@@ -9,7 +9,7 @@ import (
 )
 
 func TestPipeline_Detect(t *testing.T) {
-	p := detector.NewPipeline("en-US")
+	p := detector.NewPipeline("en-US", true)
 	text := "John Smith's SSN is 123-45-6789. Email him at john@acme.com or call 555-867-5309."
 
 	req := model.DetectionRequest{

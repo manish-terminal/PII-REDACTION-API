@@ -85,6 +85,8 @@ The GitHub Action uses `update-function-code`, which requires the function to **
 5. Under **Permissions**, ensure the execution role has DynamoDB access (see Section 2).
 6. Click **Create function**.
 7. **IMPORTANT**: In the **Runtime settings** (at the bottom of the Code tab), ensure the **Handler** is set to `bootstrap`.
+8. **Memory Allocation**: Increase the memory to at least **512MB** (1GB recommended). The NER layer (Natural Language Processing) requires more memory than the default 128MB. If you see `Internal Server Error`, this is likely the cause.
+
 
 ### Option B: Via AWS CLI
 ```bash

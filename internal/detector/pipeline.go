@@ -43,18 +43,15 @@ func (p *Pipeline) Detect(ctx context.Context, req model.DetectionRequest) ([]mo
 		regexResults, regexErr = p.regex.Detect(ctx, req.Text, req.Locale)
 	}()
 
-	/*
-		go func() {
-			defer wg.Done()
-			defer func() {
-				if r := recover(); r != nil {
-					nerErr = fmt.Errorf("ner detector panicked: %v", r)
-				}
-			}()
-			nerResults, nerErr = p.ner.Detect(ctx, req.Text)
+	go func() {
+		defer wg.Done()
+		defer func() {
+			if r := recover(); r != nil {
+				nerErr = fmt.Errorf("ner detector panicked: %v", r)
+			}
 		}()
-	*/
-	wg.Done() // Manually done for the commented out goroutine
+		nerResults, nerErr = p.ner.Detect(ctx, req.Text)
+	}()
 
 	wg.Wait()
 
